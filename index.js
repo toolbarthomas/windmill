@@ -5,33 +5,27 @@ const fs = require("fs");
 const glob = require("glob");
 const path = require("path");
 
+const message = require("./bin/message");
+const error = require("./bin/error");
+
 const Email = require("email-templates");
 
 module.exports = (() => {
   // Default configuration for Windmill.
   const defaults = {
-    emails: [],
+    templates: [],
     src: "./src",
     dist: "./dist",
+    templateDirectory: 'emails',
     recipients: [],
+    sender: 'windmill@example.com'
   };
 
   // Get environment specific variables from the dotenv environment file.
-  const config = getEnvironment(defaults);
+  const config = getEnvironmentConfig(defaults);
 
-  // Actual configuration files with fallback values from `defaults`.
-  const options = setOptions(defaults, config);
-
-  console.log(options);
-
-  // There should be a configurations file right now, abort otherwise...
-  if (!options || Object.keys(options).length === 0) {
-    error("Unable to set any options.");
-  }
-
-  if (options.emails.length === 0) {
-    error("Unable to locate any valid email templates...");
-  }
+  // Get all email templates defined within ``
+  const templates = setEmailTemplates(config);
 })();
 
 /**
@@ -40,12 +34,12 @@ module.exports = (() => {
  *
  * @param {Object} defaults The default options for Windmill.
  */
-function getEnvironment(defaults) {
+function getEnvironmentConfig(defaults) {
   const envPath = path.resolve(`${process.cwd()}/.env`);
 
   // Check if there is any environemnt file defined, create one otherwise.
   if (fs.existsSync(envPath)) {
-    return setEnvironment(envPath, defaults);
+    return setEnvironmentConfig(envPath, defaults);
   }
   else {
     fs.writeFile(envPath, "", "utf8", error => {
@@ -55,7 +49,7 @@ function getEnvironment(defaults) {
 
       message(`No dotenv environment file ('.env') has been defined.\nA fresh new copy has been created within: ${process.cwd()}`)
 
-      return setEnvironment(envPath, defaults);
+      return setEnvironmentConfig(envPath, defaults);
     });
   }
 }
@@ -69,7 +63,7 @@ function getEnvironment(defaults) {
  *
  * @returns {Object}
  */
-function setEnvironment(envPath, defaults) {
+function setEnvironmentConfig(envPath, defaults) {
   const env = require("dotenv").config({
     path: envPath
   });
@@ -81,10 +75,10 @@ function setEnvironment(envPath, defaults) {
 
   if (Object.keys(env.parsed).length === 0) {
     message("No environment specific configuration has been defined.");
-    message("Windmill will fall back to the default configuration...");
+    message("Windmill will use the default configuration...");
   }
 
-  const config = {};
+  const config = defaults || {};
 
   // Define the source directory with all Windmill specific assets.
   config['src'] = process.env.WINDMILL_SRC = process.env.WINDMILL_SRC || defaults.src;
@@ -92,38 +86,25 @@ function setEnvironment(envPath, defaults) {
   // Define the destination directory for our build.
   config['dist'] = process.env.WINDMILL_DIST = process.env.WINDMILL_SRC || defaults.dist;
 
+  // Define the email templates to send.
+  config['emails'] = getEmailTemplates() || [];
+
   // Define the recipients to send our mails to.
   config["recipients"] = process.env.WINDMILL_RECIPIENTS = (process.env.WINDMILL_RECIPIENTS ? process.env.WINDMILL_RECIPIENTS.split(",") : []);
 
+  // Define the email address to send our mails to.
+  config["sender"] = process.env.WINDMILL_SENDER = process.env.WINDMILL_SENDER || defaults.sender;
+
   // Throw an exception if `config` is not valid.
-  if (!config) {
-    error("Unable to read the configuration for Windmill, aborting...");
+  if (!config || Object.keys(config).length === 0) {
+    error("Windmill is unable to define the configuration.");
   }
 
   return config;
 }
 
 /**
- * Get all command-line interface arguments.
- *
- * @param {Object} defaults Default configuration options.
- * @param {Object} config Default environment configuration.
- *
- * @returns {Object}
- */
-function setOptions(defaults, config) {
-  const options = defaults || {};
-
-  options["emails"] = getEmailTemplates();
-  options["src"] = config.src;
-  options["dist"] = config.dost;
-  options["recipients"] = config.recipients;
-
-  return options;
-}
-
-/**
- * Define all email templates to process from and filter out any non-excisting
+ * Get all email templates to process from and filter out any non-excisting
  * directories.
  * Windmill will try to locate all email templates with a globbing pattern
  * if no arguments where inserted.
@@ -145,11 +126,29 @@ function getEmailTemplates() {
 
     // Filter out non-excisting email template directories.
     emails = _.compact(emails);
-  } else {
+  }
+  else {
     emails = glob.sync("./src/emails/*");
   }
 
   return emails;
+}
+
+/**
+ * Queue each template to process as email.
+ * Windmill will try to send all templates within the template directory if
+ * no specific file has to be processed.
+ *
+ * @param {Object} config Use Windmill configuration object.
+ */
+function setEmailTemplates(config) {
+  let templates = [];
+
+  if (!config.templates || config.templates.length === 0) {
+    error("No email template is defined for Windmill, aborting...");
+  }
+
+  return templates;
 }
 
 /**
@@ -180,26 +179,4 @@ function _processHasFileArguments() {
 
   // `argv._` should be a valid object with entry files.
   return true;
-}
-
-/**
- * Ouput a new Error Exception with Chalk.
- *
- * @param {String} error The error message to output.
- */
-function error(error) {
-  const ouput = chalk.red(error);
-
-  console.error(new Error(ouput));
-}
-
-/**
- * Output a simple message with Chalk.
- *
- * @param {String} message The message to ouput.
- */
-function message(message) {
-  const output = chalk.cyan(message);
-
-  console.info(output);
 }
