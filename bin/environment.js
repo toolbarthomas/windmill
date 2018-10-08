@@ -4,8 +4,8 @@ const fs = require("fs");
 const glob = require("glob");
 const path = require("path");
 
-const message = require("./message");
 const error = require("./error");
+const message = require("./message");
 
 module.exports = {
   /**
@@ -91,6 +91,8 @@ module.exports = {
    * directories.
    * Windmill will try to locate all email templates with a globbing pattern
    * if no arguments where inserted.
+   *
+   * @returns {Object}
    */
   getEmailTemplates() {
     const source = path.resolve(process.env.WINDMILL_SRC, process.env.WINDMILL_ROOT);

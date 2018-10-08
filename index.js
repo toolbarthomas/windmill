@@ -1,7 +1,3 @@
-const _ = require("lodash");
-const glob = require("glob");
-const path = require("path");
-
 const environment = require("./bin/environment");
 const email = require("./bin/email");
 

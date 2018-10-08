@@ -8,5 +8,7 @@ const chalk = require("chalk");
 module.exports = (error) => {
   const output = chalk.red(error);
 
-  console.error(new Error(output));
+  console.error(output);
+
+  process.exit(1);
 };
