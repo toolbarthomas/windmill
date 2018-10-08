@@ -1,31 +1,30 @@
 const _ = require("lodash");
 const argv = require("minimist")(process.argv.slice(2)) || {};
-const chalk = require("chalk");
 const fs = require("fs");
 const glob = require("glob");
+const nodemailer = require("nodemailer");
 const path = require("path");
+
 
 const message = require("./bin/message");
 const error = require("./bin/error");
 
-const Email = require("email-templates");
-
 module.exports = (() => {
   // Default configuration for Windmill.
   const defaults = {
-    templates: [],
     src: "./src",
     dist: "./dist",
-    templateDirectory: 'emails',
     recipients: [],
-    sender: 'windmill@example.com'
+    root: 'templates',
+    sender: 'windmill@example.com',
+    templates: []
   };
 
   // Get environment specific variables from the dotenv environment file.
   const config = getEnvironmentConfig(defaults);
 
   // Get all email templates defined within ``
-  const templates = setEmailTemplates(config);
+  const queue = setEmailQueue(config);
 })();
 
 /**
@@ -86,14 +85,17 @@ function setEnvironmentConfig(envPath, defaults) {
   // Define the destination directory for our build.
   config['dist'] = process.env.WINDMILL_DIST = process.env.WINDMILL_SRC || defaults.dist;
 
-  // Define the email templates to send.
-  config['emails'] = getEmailTemplates() || [];
-
   // Define the recipients to send our mails to.
   config["recipients"] = process.env.WINDMILL_RECIPIENTS = (process.env.WINDMILL_RECIPIENTS ? process.env.WINDMILL_RECIPIENTS.split(",") : []);
 
+  // Define the root directory where all email templates are defined.
+  config["root"] = process.env.WINDMILL_ROOT = process.env.WINDMILL_ROOT || defaults.root;
+
   // Define the email address to send our mails to.
   config["sender"] = process.env.WINDMILL_SENDER = process.env.WINDMILL_SENDER || defaults.sender;
+
+  // Define the email templates to send.
+  config['templates'] = getEmailTemplates() || [];
 
   // Throw an exception if `config` is not valid.
   if (!config || Object.keys(config).length === 0) {
@@ -110,25 +112,27 @@ function setEnvironmentConfig(envPath, defaults) {
  * if no arguments where inserted.
  */
 function getEmailTemplates() {
+  const source = path.resolve(process.env.WINDMILL_SRC, process.env.WINDMILL_ROOT);
+
   let emails = [];
 
   if (_processHasFileArguments()) {
     // Map each entry email within the arrays key
     emails = _.map(argv._, email => {
-      const source = `./src/emails/${email}`;
+      const file = path.resolve(source, email);
 
-      if (!fs.existsSync(source)) {
+      if (!fs.existsSync(file)) {
         return;
       }
 
-      return source;
+      return file;
     });
 
     // Filter out non-excisting email template directories.
     emails = _.compact(emails);
   }
   else {
-    emails = glob.sync("./src/emails/*");
+    emails = glob.sync(path.resolve(source, '*'));
   }
 
   return emails;
@@ -141,14 +145,19 @@ function getEmailTemplates() {
  *
  * @param {Object} config Use Windmill configuration object.
  */
-function setEmailTemplates(config) {
-  let templates = [];
-
+function setEmailQueue(config) {
   if (!config.templates || config.templates.length === 0) {
     error("No email template is defined for Windmill, aborting...");
   }
 
-  return templates;
+  // Queue all the Nodemailer tranpsporter objects.
+  let transporters = [];
+
+  config.templates.forEach(function (template) {
+    console.log(template);
+  });
+
+  return transporters;
 }
 
 /**
