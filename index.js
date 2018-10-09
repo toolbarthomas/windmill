@@ -16,5 +16,5 @@ module.exports = (() => {
   const config = environment.getConfig(defaults);
 
   // Get all email templates defined within ``
-  const queue = email.getQueue(config);
+  const emails = email.init(config);
 })();

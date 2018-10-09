@@ -64,7 +64,7 @@ module.exports = {
     config['src'] = process.env.WINDMILL_SRC = process.env.WINDMILL_SRC || defaults.src;
 
     // Define the destination directory for our build.
-    config['dist'] = process.env.WINDMILL_DIST = process.env.WINDMILL_SRC || defaults.dist;
+    config['dist'] = process.env.WINDMILL_DIST = process.env.WINDMILL_DIST || defaults.dist;
 
     // Define the recipients to send our mails to.
     config["recipients"] = process.env.WINDMILL_RECIPIENTS = (process.env.WINDMILL_RECIPIENTS ? process.env.WINDMILL_RECIPIENTS.split(",") : []);
