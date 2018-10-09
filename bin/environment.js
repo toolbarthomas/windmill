@@ -60,22 +60,25 @@ module.exports = {
 
     const config = defaults || {};
 
-    // Define the source directory with all Windmill specific assets.
+    // The source directory with all Windmill specific assets.
     config['src'] = process.env.WINDMILL_SRC = process.env.WINDMILL_SRC || defaults.src;
 
-    // Define the destination directory for our build.
+    // The destination directory for our build.
     config['dist'] = process.env.WINDMILL_DIST = process.env.WINDMILL_DIST || defaults.dist;
 
-    // Define the recipients to send our mails to.
+    // The recipients to send our mails to.
     config["recipients"] = process.env.WINDMILL_RECIPIENTS = (process.env.WINDMILL_RECIPIENTS ? process.env.WINDMILL_RECIPIENTS.split(",") : []);
 
-    // Define the root directory where all email templates are defined.
+    // The root directory where all email templates are defined.
     config["root"] = process.env.WINDMILL_ROOT = process.env.WINDMILL_ROOT || defaults.root;
 
-    // Define the email address to send our mails to.
+    // The modules directory where all global partials are defined.
+    config["modules"] = process.env.WINDMILL_MODULES = process.env.WINDMILL_MODULES || defaults.modules;
+
+    // The email address to send our mails to.
     config["sender"] = process.env.WINDMILL_SENDER = process.env.WINDMILL_SENDER || defaults.sender;
 
-    // Define the email templates to send.
+    // The email templates to send.
     config['templates'] = this.getEmailTemplates() || [];
 
     // Throw an exception if `config` is not valid.
