@@ -3,7 +3,7 @@ const fs = require("fs");
 const glob = require("glob");
 const path = require("path");
 
-const template = require("./template");
+const builder = require("./builder");
 const error = require("./error");
 const message = require("./message");
 
@@ -53,7 +53,7 @@ module.exports = {
         message(`Preproces subject: ${_.startCase(basename)} - [${index + 1} of ${subjects.length}]`);
 
         // Process all resources for the current template.
-        $this.preprocessSubject(subject, data, config);
+        $this.preprocessSubject(subject, path.basename(template), data, config);
 
         message(`Successfully processed subject: ${_.startCase(basename)} - [${index + 1} of ${subjects.length}`);
       });
@@ -137,7 +137,7 @@ module.exports = {
    * @param {Object} data Defines the template globals and subject locals.
    * @param {Object} config The Windmill configuration object.
    */
-  preprocessSubject(subject, data, config) {
-    template.process(subject, data, config);
+  preprocessSubject(subject, template, data, config) {
+    builder.process(subject, template, data, config);
   }
 }

@@ -7,12 +7,15 @@ const error = require("./error");
 
 module.exports = {
 
-  process(templatePath, data, config) {
+  process(templatePath, templateName, data, config) {
     // Twig options
     const options = {
       base: config.src,
       path: templatePath,
-      async: false
+      async: false,
+      namespaces: {
+        "template": path.join(config.src, config.root, templateName)
+      }
     }
 
     // Process the current template path with Twig.
