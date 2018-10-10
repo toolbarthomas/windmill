@@ -6,7 +6,7 @@ const chalk = require("chalk");
  * @param {String} message The message to ouput.
  */
 module.exports = (message) => {
-  const output = chalk.cyan(message);
+  const output = chalk.yellow(message);
 
   console.info(output);
 };

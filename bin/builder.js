@@ -1,38 +1,27 @@
+const Twig = require("twig");
+const Promise = require("bluebird");
+
 const fs = require("fs");
 const juice = require("juice");
 const mkdirp = require("mkdirp");
 const path = require("path");
-
-
-const Twig = require("twig");
-
+const inliner = Promise.promisifyAll(require("web-resource-inliner"));
 
 const error = require("./error");
+const message = require("./message");
+const success = require("./success");
 
 module.exports = {
 
-  process(templatePath, templateName, data, config) {
-
-    // Twig options
-    const options = {
-      base: config.src,
-      path: templatePath,
-      async: false,
-      namespaces: {
-        "template": path.join(config.src, config.root, templateName)
-      }
-    }
-
-    // Process the current template path with Twig.
-    const template = Twig.twig(options).render(data || {});
-
-    if (!template) {
-      return;
-    }
+  process(subject, template, data, config) {
+    // Get the directory name of the template directory of the current subject.
+    const templateName = path.basename(template);
 
     // Get the extension name to filter out.
-    const extension = path.extname(templatePath);
-    const filename = path.basename(templatePath, extension);
+    const extension = path.extname(subject);
+
+    // Define the filename for the processed template.
+    const subjectName = path.basename(subject, extension);
 
     /**
      * Resolve paths from config.src to config.dist so it can be replaced
@@ -42,7 +31,64 @@ module.exports = {
     const dist = path.resolve(process.cwd(), config.dist);
 
     // Use the same destination directory structure for the current template.
-    const destinationDirectory = path.dirname(templatePath).replace(src, dist);
+    const destinationDirectory = path.dirname(subject).replace(src, dist);
+
+    // Twig options
+    const twigOptions = {
+      base: config.src,
+      path: subject,
+      async: false,
+      namespaces: {
+        // "modules": path.join(config.src, config.modules), // @todo: Fix multiple namespace bug.
+        "template": path.join(config.src, config.root, templateName)
+      }
+    }
+
+    message(`Preprocessing template from subject: ${subjectName}.`);
+
+    // Process the current template path with Twig.
+    const render = Twig.twig(twigOptions).render(data || {});
+
+    if (!render) {
+      return;
+    }
+
+    success('Done - Subject template preprocessed!');
+
+    // web-resource-inliner options
+    const inlinerOptions = {
+      fileContent: render,
+      relativeTo: config.src
+    };
+
+    message(`Embedding resources for subject: ${subjectName}.`);
+
+    // Inline all resources defined within the processed html template.
+    let embedded;
+
+    inliner.html(inlinerOptions, (err, result) => {
+      if (err) {
+        error(err);
+      }
+
+      embedded = result;
+    });
+
+    success(`Done - Resources embedded for subject: ${subjectName}.`);
+
+    message(`Inlining resources for subject ${subjectName}.`);
+
+    const inlined = juice(embedded);
+
+    message(`Done - Resources inlined for subject ${subjectName}.`);
+
+    if (!inlined) {
+      return;
+    }
+
+    const output = inlined;
+
+    message(`Writing subject to: ${destinationDirectory}`)
 
     // Write the directory to the filesystem.
     mkdirp(destinationDirectory, (err) => {
@@ -51,7 +97,9 @@ module.exports = {
       }
 
       // Write the processed template to the filesystem.
-      fs.writeFileSync(path.resolve(destinationDirectory, `${filename}.html`), template);
+      fs.writeFileSync(path.resolve(destinationDirectory, `${subjectName}.html`), output);
+
+      success(`Done - Subject processed to: ${subject}`);
     });
   }
 

@@ -6,6 +6,7 @@ const path = require("path");
 const builder = require("./builder");
 const error = require("./error");
 const message = require("./message");
+const success = require("./success");
 
 module.exports = {
   /**
@@ -22,15 +23,15 @@ module.exports = {
       error("No email template is defined for Windmill, aborting...");
     }
 
-    const $this = this;
+    const self = this;
 
     // Get all subject to send as email from each defined template directory.
     config.templates.forEach(function (template, index) {
       // Queue each subject from the current template directory.
-      const subjects = $this.getSubjects(template);
+      const subjects = self.getSubjects(template);
 
       // Define the globals for the current template
-      const globals = $this.getTemplateGlobals(template);
+      const globals = self.getTemplateGlobals(template);
 
       if (!subjects) {
         message(`No subjects are defined for ${path.basename(template)} - [${index + 1} of ${config.templates.length}]`);
@@ -38,26 +39,20 @@ module.exports = {
         return;
       }
       else {
-        message(`Queuing template: ${path.basename(template)} - [${index + 1} of ${config.templates.length}]`);
+        message(`Building subjects from template: ${template} - [${index + 1} of ${config.templates.length}]`);
       }
 
       subjects.forEach(function (subject, index) {
-        const extension = path.extname(subject);
-        const basename = path.basename(subject, extension);
-        const locals = $this.getSubjectLocals(subject);
+        const locals = self.getSubjectLocals(subject);
 
         // Merge the current subject locals with the template globals
-        const data = Object.assign(locals, { template: globals });
-
-        console.log(data);
-        return;
-
-        message(`Preproces subject: ${_.startCase(basename)} - [${index + 1} of ${subjects.length}]`);
+        const data = {
+          template: globals,
+          subject: locals
+        };
 
         // Process all resources for the current subject.
-        $this.preprocessSubject(subject, path.basename(template), data, config);
-
-        message(`Successfully processed subject: ${_.startCase(basename)} - [${index + 1} of ${subjects.length}`);
+        builder.process(subject, template, data, config);
       });
     });
   },
@@ -130,16 +125,5 @@ module.exports = {
     }
 
     return JSON.parse(fs.readFileSync(pathToJson));
-  },
-
-  /**
-   * Process each resource (templates & assets) for the selected subject.
-   *
-   * @param {String} subject The template path of the current subject file.
-   * @param {Object} data Defines the template globals and subject locals.
-   * @param {Object} config The Windmill configuration object.
-   */
-  preprocessSubject(subject, template, data, config) {
-    builder.process(subject, template, data, config);
   }
 }

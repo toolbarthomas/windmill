@@ -7,6 +7,17 @@ const path = require("path");
 const error = require("./error");
 const message = require("./message");
 
+// Default configuration for Windmill.
+const defaults = {
+  src: "./src",
+  dist: "./dist",
+  modules: "modules",
+  recipients: [],
+  root: 'templates',
+  sender: 'windmill@example.com',
+  templates: []
+};
+
 module.exports = {
   /**
    * Check if the current working directory has a dotenv environment file defined.
@@ -14,7 +25,7 @@ module.exports = {
    *
    * @param {Object} defaults The default options for Windmill.
    */
-  getConfig(defaults) {
+  getConfig() {
     const envPath = path.resolve(`${process.cwd()}/.env`);
 
     // Check if there is any environemnt file defined, create one otherwise.
@@ -75,7 +86,7 @@ module.exports = {
     // The modules directory where all global partials are defined.
     config["modules"] = process.env.WINDMILL_MODULES = process.env.WINDMILL_MODULES || defaults.modules;
 
-    // The email address to send our mails to.
+    // The email address where the email is sent from.
     config["sender"] = process.env.WINDMILL_SENDER = process.env.WINDMILL_SENDER || defaults.sender;
 
     // The email templates to send.
