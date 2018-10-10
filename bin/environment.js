@@ -5,7 +5,7 @@ const glob = require("glob");
 const path = require("path");
 
 const error = require("./error");
-const message = require("./message");
+const warning = require("./warning");
 
 // Default configuration for Windmill.
 const defaults = {
@@ -38,7 +38,7 @@ module.exports = {
           error(error);
         }
 
-        message(`No dotenv environment file ('.env') has been defined.\nA fresh new copy has been created within: ${process.cwd()}`)
+        warning(`No dotenv environment file ('.env') has been defined.\nA fresh new copy has been created within: ${process.cwd()}`)
 
         return this.setConfig(envPath, defaults);
       });
@@ -65,8 +65,8 @@ module.exports = {
     }
 
     if (Object.keys(env.parsed).length === 0) {
-      message("No environment specific configuration has been defined.");
-      message("Windmill will use the default configuration...");
+      warning("No environment specific configuration has been defined.");
+      warning("Windmill will use the default configuration...");
     }
 
     const config = defaults || {};
@@ -106,19 +106,23 @@ module.exports = {
    * Windmill will try to locate all email templates with a globbing pattern
    * if no arguments where inserted.
    *
-   * @returns {Object}
+   * @returns {Object} Array of paths to each subject template file.
    */
   getEmailTemplates() {
     const source = path.resolve(process.env.WINDMILL_SRC, process.env.WINDMILL_ROOT);
 
     let emails = [];
 
-    if (_processHasFileArguments()) {
+    // Check if the `templates` argument is defined by the user.
+    if ('templates' in argv && argv.templates !== true) {
+      const templates = (argv.templates).split(",");
+
       // Map each entry email within the arrays key
-      emails = _.map(argv._, email => {
+      emails = _.map(templates, email => {
         const file = path.resolve(source, email);
 
         if (!fs.existsSync(file)) {
+          warning(`Template not found: ${argv.templates}`);
           return;
         }
 
@@ -127,41 +131,10 @@ module.exports = {
 
       // Filter out non-excisting email template directories.
       emails = _.compact(emails);
-    }
-    else {
+    } else {
       emails = glob.sync(path.resolve(source, '*'));
     }
 
     return emails;
   }
-}
-
-/**
- * Check if the current Node process has any files defined as arguments
- * within the actual build command.
- * You can process a specific e-mail template by defining the template
- * directory name as Node Argument.
- *
- * @param {Object} files
- *
- * @returns {Boolean}
- */
-function _processHasFileArguments() {
-  // Check if `argv._` even excists.
-  if (!"_" in argv) {
-    return false;
-  }
-
-  // Check if `argv._` has no undefined value.
-  if (!argv._) {
-    return false;
-  }
-
-  // Check if `argv._` is not empty
-  if (typeof argv._ === "object" && Object.keys(argv._).length === 0) {
-    return false;
-  }
-
-  // `argv._` should be a valid object with entry files.
-  return true;
 }

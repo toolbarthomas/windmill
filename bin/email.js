@@ -5,7 +5,7 @@ const path = require("path");
 
 const builder = require("./builder");
 const error = require("./error");
-const message = require("./message");
+const info = require("./info");
 const success = require("./success");
 
 module.exports = {
@@ -20,7 +20,7 @@ module.exports = {
    */
   init(config) {
     if (!config.templates || config.templates.length === 0) {
-      error("No email template is defined for Windmill, aborting...");
+      error("No templates are defined to process, aborting Windmill.");
     }
 
     const self = this;
@@ -33,13 +33,15 @@ module.exports = {
       // Define the globals for the current template
       const globals = self.getTemplateGlobals(template);
 
+      const totals = `[ ${index + 1} of ${config.templates.length} ]`;
+
       if (!subjects) {
-        message(`No subjects are defined for ${path.basename(template)} - [${index + 1} of ${config.templates.length}]`);
-        message(`Skipping template: ${path.basename(template)} - [${index + 1} of ${config.templates.length}]`);
+        info(`No subjects are defined for ${path.basename(template)} - ${totals}`);
+        info(`Skipping template: ${path.basename(template)} - ${totals}`);
         return;
       }
       else {
-        message(`Building subjects from template: ${template} - [${index + 1} of ${config.templates.length}]`);
+        info(`Building subjects from template: ${template} - ${totals}`);
       }
 
       subjects.forEach(function (subject, index) {

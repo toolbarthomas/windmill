@@ -1,6 +1,7 @@
 const Twig = require("twig");
 const Promise = require("bluebird");
 
+const cheerio = require("cheerio");
 const fs = require("fs");
 const juice = require("juice");
 const mkdirp = require("mkdirp");
@@ -8,7 +9,7 @@ const path = require("path");
 const inliner = Promise.promisifyAll(require("web-resource-inliner"));
 
 const error = require("./error");
-const message = require("./message");
+const info = require("./info");
 const success = require("./success");
 
 module.exports = {
@@ -44,7 +45,7 @@ module.exports = {
       }
     }
 
-    message(`Preprocessing template from subject: ${subjectName}.`);
+    info(`Preprocessing template from subject: ${subjectName}.`);
 
     // Process the current template path with Twig.
     const render = Twig.twig(twigOptions).render(data || {});
@@ -53,15 +54,16 @@ module.exports = {
       return;
     }
 
-    success('Done - Subject template preprocessed!');
+    success('Subject template preprocessed!');
 
     // web-resource-inliner options
     const inlinerOptions = {
       fileContent: render,
+      image: false,
       relativeTo: config.src
     };
 
-    message(`Embedding resources for subject: ${subjectName}.`);
+    info(`Embedding resources for subject: ${subjectName}`);
 
     // Inline all resources defined within the processed html template.
     let embedded;
@@ -74,13 +76,13 @@ module.exports = {
       embedded = result;
     });
 
-    success(`Done - Resources embedded for subject: ${subjectName}.`);
+    success(`Resources embedded for subject: ${subjectName}`);
 
-    message(`Inlining resources for subject ${subjectName}.`);
+    info(`Inlining resources for subject: ${subjectName}`);
 
     const inlined = juice(embedded);
 
-    message(`Done - Resources inlined for subject ${subjectName}.`);
+    success(`Resources inlined for subject: ${subjectName}`);
 
     if (!inlined) {
       return;
@@ -88,7 +90,13 @@ module.exports = {
 
     const output = inlined;
 
-    message(`Writing subject to: ${destinationDirectory}`)
+    // Define the email subject from the title tag.
+    const $ = cheerio.load(output);
+    const $title = $("title").text().trim();
+
+    // @todo: Implement Nodemailer
+
+    info(`Writing subject to: ${destinationDirectory}`)
 
     // Write the directory to the filesystem.
     mkdirp(destinationDirectory, (err) => {
@@ -99,7 +107,7 @@ module.exports = {
       // Write the processed template to the filesystem.
       fs.writeFileSync(path.resolve(destinationDirectory, `${subjectName}.html`), output);
 
-      success(`Done - Subject processed to: ${subject}`);
+      success(`Subject processed to: ${subject}`);
     });
   }
 

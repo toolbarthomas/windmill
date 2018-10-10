@@ -5,6 +5,6 @@ module.exports = (() => {
   // Get environment specific variables from the dotenv environment file.
   const config = environment.getConfig();
 
-  // Get all email templates defined within ``
-  const emails = email.init(config);
+  // Run Windmill
+  email.init(config);
 })();

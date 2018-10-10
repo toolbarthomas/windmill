@@ -1,4 +1,5 @@
 const chalk = require("chalk");
+const symbols = require("log-symbols");
 
 /**
  * Output a simple message with Chalk.
@@ -6,7 +7,7 @@ const chalk = require("chalk");
  * @param {String} message The message to ouput.
  */
 module.exports = (message) => {
-  const output = chalk.yellow(message);
+  const output = chalk.blue(message);
 
-  console.info(output);
+  console.info(`${symbols.info} `, output);
 };

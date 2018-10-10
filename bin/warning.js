@@ -2,12 +2,12 @@ const chalk = require("chalk");
 const symbols = require("log-symbols");
 
 /**
- * Output the success message with Chalk.
+ * Output a simple message with Chalk.
  *
  * @param {String} message The message to ouput.
  */
 module.exports = (message) => {
-  const output = chalk.green(message);
+  const output = chalk.yellow(message);
 
-  console.log(`${symbols.success} `, output);
+  console.log(`${symbols.warning} `, output);
 };
