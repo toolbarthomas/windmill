@@ -110,5 +110,4 @@ module.exports = {
       success(`Subject processed to: ${subject}`);
     });
   }
-
 }
