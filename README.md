@@ -53,10 +53,77 @@ Coming soon
 ### Modules
 Coming soon
 
-## Binding template data
+## Builder
+
+### Binding data
+You can store local variables within a seperate JSON file for each email subject.
+This JSON file should be defined within the `subjects` directory and the filename
+must match with the name of the subject. For example:
+
+```shell
+subjects/
+ - example.twig # Use example.json to reference variables.
+ - example.json # Variables are store within an JSON object.
+```
+
+You can also define globals within each template directory that can be used within
+the template files. To define a global you should create a json file within
+template directory. The filename of the json file should match the name of the
+template file.
+
+All globals are available from the `subject` & `template` object and can be
+accessed within the template file:
+
+##### Structure:
+
+```shell
+templates/
+  - example
+    - example.json # Object of example.json will used within each subject.
+    - subjects/
+      welcome.json # Specific variables for subject 'welcome'.
+      welcome.twig # Template can access both variables 'from example.json' & 'welcome.json'.
+      ...
+```
+
+##### Template variables for: example.json
+```json
+{
+  "company": {
+    "name": "Barber Bakery",
+    "address": "Foo street 1"
+  },
+}
+```
+
+##### Subject variables for: welcome.json
+```json
+{
+  "title": "Greetings stranger...",
+  "body": "Lorem ipsum si dolor amet..."
+}
+```
+
+##### Generates the following globals:
+
+```json
+{
+  "template" : {
+    "name": "Barber Bakery",
+    "address": "Foo street 1"
+  },
+  "subject" {
+    "title": "Greetings stranger...",
+    "body": "Lorem ipsum si dolor amet..."
+  }
+}
+```
+
+
+### Binding subject data
 Coming soon
 
-## Processing webresources
+### Processing webresources
 Coming soon
 
 ## Preview in the Browser

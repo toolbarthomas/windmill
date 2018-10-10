@@ -1,13 +1,18 @@
 const fs = require("fs");
+const juice = require("juice");
 const mkdirp = require("mkdirp");
 const path = require("path");
+
+
 const Twig = require("twig");
+
 
 const error = require("./error");
 
 module.exports = {
 
   process(templatePath, templateName, data, config) {
+
     // Twig options
     const options = {
       base: config.src,
@@ -19,7 +24,7 @@ module.exports = {
     }
 
     // Process the current template path with Twig.
-    const template = Twig.twig(options).render(data);
+    const template = Twig.twig(options).render(data || {});
 
     if (!template) {
       return;

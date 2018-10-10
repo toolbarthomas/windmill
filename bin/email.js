@@ -44,15 +44,17 @@ module.exports = {
       subjects.forEach(function (subject, index) {
         const extension = path.extname(subject);
         const basename = path.basename(subject, extension);
-        const dirname = path.dirname(subject);
         const locals = $this.getSubjectLocals(subject);
 
         // Merge the current subject locals with the template globals
-        const data = _.merge(globals, locals);
+        const data = Object.assign(locals, { template: globals });
+
+        console.log(data);
+        return;
 
         message(`Preproces subject: ${_.startCase(basename)} - [${index + 1} of ${subjects.length}]`);
 
-        // Process all resources for the current template.
+        // Process all resources for the current subject.
         $this.preprocessSubject(subject, path.basename(template), data, config);
 
         message(`Successfully processed subject: ${_.startCase(basename)} - [${index + 1} of ${subjects.length}`);
