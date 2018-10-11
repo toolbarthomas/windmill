@@ -5,6 +5,7 @@ const glob = require("glob");
 const path = require("path");
 
 const error = require("./error");
+const info = require("./info");
 const warning = require("./warning");
 
 // Default configuration for Windmill.
@@ -38,7 +39,8 @@ module.exports = {
           error(error);
         }
 
-        warning(`No dotenv environment file ('.env') has been defined.\nA fresh new copy has been created within: ${process.cwd()}`)
+        warning("No dotenv environment file ('.env') has been defined.");
+        info(`A fresh new copy has been created within: ${process.cwd()}`);
 
         return this.setConfig(envPath, defaults);
       });
@@ -122,7 +124,7 @@ module.exports = {
         const file = path.resolve(source, email);
 
         if (!fs.existsSync(file)) {
-          warning(`Template not found: ${argv.templates}`);
+          warning(`Template not found: ${email}, skipping template...`);
           return;
         }
 
@@ -136,5 +138,64 @@ module.exports = {
     }
 
     return emails;
+  },
+
+  /**
+   * Validate if all Windmill required paths excists.
+   * @todo Cleanup validation.
+   *
+   * @param {Object} config Use Windmill configuration object.
+   */
+  validateConfigPaths(config) {
+    let err;
+
+    // Check if `WINDMILL_SRC` directory excists.
+    err = this._validateConfigPath(
+      path.resolve(process.cwd(), config["src"]),
+      `The Windmill source directory '${config["src"]}' does not excists`,
+      "You can customize the source directory by defining `WINDMILL_SRC` within the environment file.",
+      (defaults.src === config.src)
+    );
+
+    // Check if `WINDMILL_DIST` directory excists.
+    err = this._validateConfigPath(
+      path.resolve(process.cwd(), config["dist"]),
+      `The Windmill destination directory '${config["dist"]}' does not excists.`,
+      "You can customize the destination directory by defining `WINDMILL_DIST` within the environment file.",
+      (defaults.dist === config.dist)
+    );
+
+    // Check if `WINDMILL_ROOT` directory excists.
+    err = this._validateConfigPath(
+      path.resolve(process.cwd(), config["src"], config["root"]),
+      `The root directory for all Windmill templates '${config["root"]}' does not excists`,
+      "You can customize the root directory by defining `WINDMILL_ROOT` within the environment file.",
+      (defaults.root === config.root)
+    );
+
+    if (err) {
+      error("Windmill couldn't find the required directories.");
+    }
+  },
+
+  /**
+   *
+   * @param {String} path Path to the validate.
+   * @param {String} missingPathMessage Output message if path is missing.
+   * @param {String} customizedPathMessage Explanation about how to custimize paths.
+   * @param {Boolean} pathIsCustimized Output the `customizedPathMessage` message when true.
+   */
+  _validateConfigPath(path, missingPathMessage, customizedPathMessage, pathIsCustimized) {
+    if (!fs.existsSync(path)) {
+      warning(missingPathMessage);
+
+      if (pathIsCustimized) {
+        info(customizedPathMessage);
+      }
+
+      return true;
+    }
+
+    return false;
   }
 }

@@ -33,6 +33,7 @@ module.exports = {
 
     // Use the same destination directory structure for the current template.
     const destinationDirectory = path.dirname(subject).replace(src, dist);
+    const destinationPath = path.resolve(destinationDirectory, `${subjectName}.html`);
 
     // Twig options
     const twigOptions = {
@@ -96,7 +97,7 @@ module.exports = {
 
     // @todo: Implement Nodemailer
 
-    info(`Writing subject to: ${destinationDirectory}`)
+    info(`Creating template: ${destinationPath}`)
 
     // Write the directory to the filesystem.
     mkdirp(destinationDirectory, (err) => {
@@ -105,9 +106,9 @@ module.exports = {
       }
 
       // Write the processed template to the filesystem.
-      fs.writeFileSync(path.resolve(destinationDirectory, `${subjectName}.html`), output);
+      fs.writeFileSync(destinationPath, output);
 
-      success(`Subject processed to: ${subject}`);
+      success(`Template created: ${destinationPath}`);
     });
   }
 }

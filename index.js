@@ -22,6 +22,10 @@ const email = {
   init() {
     const config = environment.getConfig();
 
+    // Check if the defined paths within the config file excists.
+    environment.validateConfigPaths(config);
+    return;
+
     if (!config.templates || config.templates.length === 0) {
       error("No templates are defined to process, aborting Windmill.");
     }
