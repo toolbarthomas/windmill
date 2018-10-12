@@ -17,7 +17,7 @@ const email = {
    * Windmill will try to send all templates within the template directory if
    * no specific file has to be processed.
    *
-   * @param {Object} config Use Windmill configuration object.
+   * @param {Object} config Windmill configuration object.
    *
    * @returns {Object}
    */
@@ -32,6 +32,10 @@ const email = {
     }
 
     const self = this;
+
+    if (config.argv.watch) {
+      return;
+    }
 
     // Get all subject to send as email from each defined template directory.
     config.templates.forEach(function (template, index) {
@@ -52,24 +56,53 @@ const email = {
         info(`Building subjects from template: ${template} - ${totals}`);
       }
 
-      subjects.forEach(async function (subject, index) {
+      subjects.forEach((subject) => {
         const locals = self.getSubjectLocals(subject);
+
+        self.processSubject(subject, template, locals, globals, config).then((build) => {
+          mailer.send(build);
+        });
+      });
+    });
+  },
+
+  processSubject(subject, template, locals, globals, config) {
+    return new Promise(async (cb) => {
+      try {
+        const templatePath = template || this.getTemplateFromSubject(subject, config);
+        const templateGlobals = globals || this.getTemplateGlobals(template)
 
         // Merge the current subject locals with the template globals
         const data = {
-          template: globals,
+          template: templateGlobals,
           subject: locals
         };
 
         // Process all resources for the current subject.
-        const build = await builder.process(subject, template, data, config);
+        const build = await builder.process(subject, templatePath, data, config);
 
-        // Send the generated template.
-        if (config.argv.send) {
-          mailer.send(build);
-        }
-      });
+        return cb(build);
+      } catch (err) {
+        error(err);
+      }
     });
+  },
+
+  /**
+   * Return the path of the template file for the defined subject.
+   *
+   * @param {String} subject Absolute path of the defined subject.
+   * @param {Object} config Windmill configuration object.
+   *
+   * @retuns {String} Returns the absolute path of the subjects template directory.
+   */
+  getTemplateFromSubject(subject, config) {
+    const base = path.resolve(process.cwd(), config.src, config.root);
+
+    const relativeSubjectPath = subject.replace(base, '');
+
+    // Returns first dirname of the parsed path from the current subject.
+    return path.normalize(relativeSubjectPath).split(path.sep)[1];
   },
 
   /**

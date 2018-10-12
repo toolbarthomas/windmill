@@ -19,7 +19,8 @@ const defaults = {
   templates: [],
   argv: {
     send: false,
-    templates: true
+    templates: true,
+    watch: false
   }
 };
 
@@ -235,7 +236,7 @@ module.exports = {
 
       // Convert `true` || `false` as Boolean type.
       if (parsedValue === "true" || parsedValue === "false") {
-        parsedValue = Boolean(parsedValue);
+        parsedValue = (parsedValue == 'true');
       }
 
       parsed[key] = parsedValue;

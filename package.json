@@ -4,8 +4,9 @@
   "description": "Build & test email templates with Nodemailer",
   "main": "index.js",
   "scripts": {
-    "start": "node ./index.js --send false --templates $*",
-    "send": "node ./index.js --send true --templates $*",
+    "start": "node ./index.js --send false --watch false --templates $*",
+    "develop": "node ./index.js --send true --watch true --templates $*",
+    "send": "node ./index.js --send true --watch false --templates $*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Thomas van der Velde <contact@toolbarthomas.net>",
