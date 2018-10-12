@@ -17,6 +17,9 @@ const email = {
    * Windmill will try to send all templates within the template directory if
    * no specific file has to be processed.
    *
+   * Windmill won't process template directory if `config.argv.watch`
+   * equals true.
+   *
    * @param {Object} config Windmill configuration object.
    *
    * @returns {Object}
@@ -34,16 +37,16 @@ const email = {
     const self = this;
 
     if (config.argv.watch) {
-      return;
+      return this.watch();
     }
 
     // Get all subject to send as email from each defined template directory.
     config.templates.forEach(function (template, index) {
       // Queue each subject from the current template directory.
-      const subjects = self.getSubjects(template);
+      const subjects = self._getSubjects(template);
 
       // Define the globals for the current template
-      const globals = self.getTemplateGlobals(template);
+      const globals = self._getTemplateGlobals(template);
 
       const totals = `[ ${index + 1} of ${config.templates.length} ]`;
 
@@ -56,21 +59,34 @@ const email = {
         info(`Building subjects from template: ${template} - ${totals}`);
       }
 
+      // Process each subject template.
       subjects.forEach((subject) => {
-        const locals = self.getSubjectLocals(subject);
-
-        self.processSubject(subject, template, locals, globals, config).then((build) => {
-          mailer.send(build);
+        self._processSubject(subject, template, globals, config).then((build) => {
+          // Send an example mail from the generated subject.
+          if (config.argv.send) {
+            mailer.send(build);
+          }
         });
       });
     });
   },
 
-  processSubject(subject, template, locals, globals, config) {
+  /**
+   * Setup a watch instance and process each file seperately.
+   */
+  watch(self) {
+    const cp = require("child_process");
+    const chokidar = require("child_process");
+
+    // @todo implement watcher
+  },
+
+  _processSubject(subject, template, globals, config) {
     return new Promise(async (cb) => {
       try {
-        const templatePath = template || this.getTemplateFromSubject(subject, config);
-        const templateGlobals = globals || this.getTemplateGlobals(template)
+        const locals = this._getSubjectLocals(subject);
+        const templatePath = template || this._getTemplateFromSubject(subject, config);
+        const templateGlobals = globals || this._getTemplateGlobals(template);
 
         // Merge the current subject locals with the template globals
         const data = {
@@ -96,7 +112,7 @@ const email = {
    *
    * @retuns {String} Returns the absolute path of the subjects template directory.
    */
-  getTemplateFromSubject(subject, config) {
+  _getTemplateFromSubject(subject, config) {
     const base = path.resolve(process.cwd(), config.src, config.root);
 
     const relativeSubjectPath = subject.replace(base, '');
@@ -113,7 +129,7 @@ const email = {
    *
    * @returns {Object} Array of paths to each subject from the selected template.
    */
-  getSubjects(template) {
+  _getSubjects(template) {
     // Get the subject directory for the current template directory.
     const subjectDirectory = path.resolve(template, 'subjects');
 
@@ -137,7 +153,7 @@ const email = {
    *
    * @returns {Object} Returns a parsed JSON Object.
    */
-  getTemplateGlobals(template) {
+  _getTemplateGlobals(template) {
     const name = path.basename(template);
     const pathToJson = path.resolve(template, `${name}.json`);
 
@@ -160,7 +176,7 @@ const email = {
    *
    * @returns {Object} Returns a parsed JSON Object.
    */
-  getSubjectLocals(subject) {
+  _getSubjectLocals(subject) {
     const extension = path.extname(subject);
     const pathToJson = subject.replace(extension, '.json');
 
