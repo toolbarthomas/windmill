@@ -14,7 +14,18 @@ const success = require("./success");
 
 module.exports = {
 
-  process(subject, template, data, config) {
+  /**
+   * Build a html output for each defined `subject`. Also returns generated build
+   * to setup an example email.
+   *
+   * @param {String} subject Absolute path of the subject template file.
+   * @param {*} template Absolute path of the template directory.
+   * @param {*} data Defines templates data from template & subject JSON files.
+   * @param {*} config Windmill configuration.
+   *
+   * @returns {Object} Outputs html, content and title used to send the example email.
+   */
+  async process(subject, template, data, config) {
     // Get the directory name of the template directory of the current subject.
     const templateName = path.basename(template);
 
@@ -91,24 +102,29 @@ module.exports = {
 
     const output = inlined;
 
-    // Define the email subject from the title tag.
-    const $ = cheerio.load(output);
-    const $title = $("title").text().trim();
+    // Generate the template first before we continue.
+    await this.generate(destinationPath, destinationDirectory, output);
 
-    // @todo: Implement Nodemailer
+    return output;
+  },
 
-    info(`Creating template: ${destinationPath}`)
+  generate(destinationPath, destinationDirectory, output) {
+    return new Promise(cb => {
+      info(`Creating template: ${destinationPath}`);
 
-    // Write the directory to the filesystem.
-    mkdirp(destinationDirectory, (err) => {
-      if (err) {
-        error(err);
-      }
+      // Write the directory to the filesystem.
+      mkdirp(destinationDirectory, (err) => {
+        if (err) {
+          error(err);
+        }
 
-      // Write the processed template to the filesystem.
-      fs.writeFileSync(destinationPath, output);
+        // Write the processed template to the filesystem.
+        fs.writeFileSync(destinationPath, output);
 
-      success(`Template created: ${destinationPath}`);
+        success(`Template created: ${destinationPath}`);
+
+        cb();
+      });
     });
   }
 }

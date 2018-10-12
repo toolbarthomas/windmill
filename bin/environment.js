@@ -16,7 +16,11 @@ const defaults = {
   recipients: [],
   root: 'templates',
   sender: 'windmill@example.com',
-  templates: []
+  templates: [],
+  argv: {
+    send: false,
+    templates: true
+  }
 };
 
 module.exports = {
@@ -73,6 +77,12 @@ module.exports = {
 
     const config = defaults || {};
 
+    // Command line interface arguments.
+    const args = Object.assign(defaults.argv, _.omit(argv, '_'));
+
+    // Parse Argument values to their correct type.
+    config['argv'] = this._parseArgumentValues(args);
+
     // The source directory with all Windmill specific assets.
     config['src'] = process.env.WINDMILL_SRC = process.env.WINDMILL_SRC || defaults.src;
 
@@ -80,7 +90,9 @@ module.exports = {
     config['dist'] = process.env.WINDMILL_DIST = process.env.WINDMILL_DIST || defaults.dist;
 
     // The recipients to send our mails to.
-    config["recipients"] = process.env.WINDMILL_RECIPIENTS = (process.env.WINDMILL_RECIPIENTS ? process.env.WINDMILL_RECIPIENTS.split(",") : []);
+    config["recipients"] = process.env.WINDMILL_RECIPIENTS = (
+      process.env.WINDMILL_RECIPIENTS ? process.env.WINDMILL_RECIPIENTS.split(",") : []
+    );
 
     // The root directory where all email templates are defined.
     config["root"] = process.env.WINDMILL_ROOT = process.env.WINDMILL_ROOT || defaults.root;
@@ -92,7 +104,7 @@ module.exports = {
     config["sender"] = process.env.WINDMILL_SENDER = process.env.WINDMILL_SENDER || defaults.sender;
 
     // The email templates to send.
-    config['templates'] = this.getEmailTemplates() || [];
+    config['templates'] = this.getEmailTemplates(config['argv']) || [];
 
     // Throw an exception if `config` is not valid.
     if (!config || Object.keys(config).length === 0) {
@@ -103,21 +115,23 @@ module.exports = {
   },
 
   /**
-   * Get all email templates to process from and filter out any non-excisting
+   * Get all email templates to process from and filter out any non-existing
    * directories.
    * Windmill will try to locate all email templates with a globbing pattern
    * if no arguments where inserted.
    *
+   * @param {Object} options Object with all available CLI insterted arguments.
+   *
    * @returns {Object} Array of paths to each subject template file.
    */
-  getEmailTemplates() {
+  getEmailTemplates(options) {
     const source = path.resolve(process.env.WINDMILL_SRC, process.env.WINDMILL_ROOT);
 
     let emails = [];
 
     // Check if the `templates` argument is defined by the user.
-    if ('templates' in argv && argv.templates !== true) {
-      const templates = (argv.templates).split(",");
+    if ('templates' in options && options.templates !== true) {
+      const templates = (options.templates).split(",");
 
       // Map each entry email within the arrays key
       emails = _.map(templates, email => {
@@ -131,7 +145,7 @@ module.exports = {
         return file;
       });
 
-      // Filter out non-excisting email template directories.
+      // Filter out non-existing email template directories.
       emails = _.compact(emails);
     } else {
       emails = glob.sync(path.resolve(source, '*'));
@@ -141,7 +155,7 @@ module.exports = {
   },
 
   /**
-   * Validate if all Windmill required paths excists.
+   * Validate if all Windmill required paths exists.
    * @todo Cleanup validation.
    *
    * @param {Object} config Use Windmill configuration object.
@@ -149,26 +163,26 @@ module.exports = {
   validateConfigPaths(config) {
     let err;
 
-    // Check if `WINDMILL_SRC` directory excists.
+    // Check if `WINDMILL_SRC` directory exists.
     err = this._validateConfigPath(
       path.resolve(process.cwd(), config["src"]),
-      `The Windmill source directory '${config["src"]}' does not excists`,
+      `The Windmill source directory '${config["src"]}' does not exists`,
       "You can customize the source directory by defining `WINDMILL_SRC` within the environment file.",
       (defaults.src === config.src)
     );
 
-    // Check if `WINDMILL_DIST` directory excists.
+    // Check if `WINDMILL_DIST` directory exists.
     err = this._validateConfigPath(
       path.resolve(process.cwd(), config["dist"]),
-      `The Windmill destination directory '${config["dist"]}' does not excists.`,
+      `The Windmill destination directory '${config["dist"]}' does not exists.`,
       "You can customize the destination directory by defining `WINDMILL_DIST` within the environment file.",
       (defaults.dist === config.dist)
     );
 
-    // Check if `WINDMILL_ROOT` directory excists.
+    // Check if `WINDMILL_ROOT` directory exists.
     err = this._validateConfigPath(
       path.resolve(process.cwd(), config["src"], config["root"]),
-      `The root directory for all Windmill templates '${config["root"]}' does not excists`,
+      `The root directory for all Windmill templates '${config["root"]}' does not exists`,
       "You can customize the root directory by defining `WINDMILL_ROOT` within the environment file.",
       (defaults.root === config.root)
     );
@@ -179,6 +193,7 @@ module.exports = {
   },
 
   /**
+   * Check if the defined `path` exists, output feedback about defining config paths if not.
    *
    * @param {String} path Path to the validate.
    * @param {String} missingPathMessage Output message if path is missing.
@@ -197,5 +212,35 @@ module.exports = {
     }
 
     return false;
+  },
+
+  /**
+   * Parse String values to their correct type
+   *
+   * @param {Object} args Object with all available CLI insterted arguments.
+   */
+  _parseArgumentValues(args) {
+    if (typeof args !== "object" || Object.keys(args).length === 0) {
+      return;
+    }
+
+    let parsed = args;
+
+    Object.keys(args).forEach((key) => {
+      let parsedValue = args[key];
+
+      if (typeof parsedValue !== 'string') {
+        return;
+      }
+
+      // Convert `true` || `false` as Boolean type.
+      if (parsedValue === "true" || parsedValue === "false") {
+        parsedValue = Boolean(parsedValue);
+      }
+
+      parsed[key] = parsedValue;
+    });
+
+    return parsed;
   }
 }

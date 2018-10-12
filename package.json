@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./index.js --send false --templates $*",
-    "send": "node ./index.js --send true --files $*",
+    "send": "node ./index.js --send true --templates $*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Thomas van der Velde <contact@toolbarthomas.net>",

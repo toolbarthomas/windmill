@@ -5,6 +5,8 @@ const path = require("path");
 
 const builder = require("./bin/builder");
 const environment = require("./bin/environment");
+const mailer = require("./bin/mailer");
+
 const error = require("./bin/error");
 const info = require("./bin/info");
 const success = require("./bin/success");
@@ -22,9 +24,8 @@ const email = {
   init() {
     const config = environment.getConfig();
 
-    // Check if the defined paths within the config file excists.
+    // Check if the defined paths within the config file exists.
     environment.validateConfigPaths(config);
-    return;
 
     if (!config.templates || config.templates.length === 0) {
       error("No templates are defined to process, aborting Windmill.");
@@ -51,7 +52,7 @@ const email = {
         info(`Building subjects from template: ${template} - ${totals}`);
       }
 
-      subjects.forEach(function (subject, index) {
+      subjects.forEach(async function (subject, index) {
         const locals = self.getSubjectLocals(subject);
 
         // Merge the current subject locals with the template globals
@@ -61,7 +62,12 @@ const email = {
         };
 
         // Process all resources for the current subject.
-        builder.process(subject, template, data, config);
+        const build = await builder.process(subject, template, data, config);
+
+        // Send the generated template.
+        if (config.argv.send) {
+          mailer.send(build);
+        }
       });
     });
   },
