@@ -9,7 +9,7 @@ const mailer = require("./bin/mailer");
 
 const error = require("./bin/error");
 const info = require("./bin/info");
-const success = require("./bin/success");
+const warning = require("./bin/warning");
 
 const email = {
   /**
@@ -34,33 +34,35 @@ const email = {
       error("No templates are defined to process, aborting Windmill.");
     }
 
+    // Reference this module inside scoped functions.
     const self = this;
 
+    // Spawn the Watch instance;
     if (config.argv.watch) {
       return this.watch();
     }
 
     // Get all subject to send as email from each defined template directory.
-    config.templates.forEach(function (template, index) {
+    config.templates.forEach((template, index) => {
       // Queue each subject from the current template directory.
       const subjects = self._getSubjects(template);
 
       // Define the globals for the current template
       const globals = self._getTemplateGlobals(template);
 
-      const totals = `[ ${index + 1} of ${config.templates.length} ]`;
+      const totals = `[ ${index + 1} / ${config.templates.length} ]`;
 
       if (!subjects) {
-        info(`No subjects are defined for ${path.basename(template)} - ${totals}`);
-        info(`Skipping template: ${path.basename(template)} - ${totals}`);
+        warning(`No subjects are defined for ${path.basename(template)}`);
         return;
       }
       else {
-        info(`Building subjects from template: ${template} - ${totals}`);
+        info((`Building template: ${path.basename(template)} - ${totals}`).toUpperCase());
       }
 
       // Process each subject template.
-      subjects.forEach((subject) => {
+      subjects.forEach((subject, index) => {
+        console.log(index);
         self._processSubject(subject, template, globals, config).then((build) => {
           // Send an example mail from the generated subject.
           if (config.argv.send) {
@@ -115,6 +117,7 @@ const email = {
   _getTemplateFromSubject(subject, config) {
     const base = path.resolve(process.cwd(), config.src, config.root);
 
+    // Define the relative path without resolving from process.cwd().
     const relativeSubjectPath = subject.replace(base, '');
 
     // Returns first dirname of the parsed path from the current subject.
