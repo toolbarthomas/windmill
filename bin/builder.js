@@ -1,7 +1,6 @@
 const Twig = require("twig");
 const Promise = require("bluebird");
 
-const cheerio = require("cheerio");
 const fs = require("fs");
 const juice = require("juice");
 const mkdirp = require("mkdirp");

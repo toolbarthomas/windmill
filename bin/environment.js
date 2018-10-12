@@ -1,3 +1,5 @@
+const Promise = require("bluebird");
+
 const _ = require("lodash");
 const argv = require("minimist")(process.argv.slice(2)) || {};
 const fs = require("fs");
@@ -32,24 +34,26 @@ module.exports = {
    * @param {Object} defaults The default options for Windmill.
    */
   getConfig() {
-    const envPath = path.resolve(`${process.cwd()}/.env`);
+    return new Promise((cb) => {
+      const envPath = path.resolve(`${process.cwd()}/.env`);
 
-    // Check if there is any environemnt file defined, create one otherwise.
-    if (fs.existsSync(envPath)) {
-      return this.setConfig(envPath, defaults);
-    }
-    else {
-      fs.writeFile(envPath, "", "utf8", error => {
-        if (error) {
-          error(error);
-        }
+      // Check if there is any environemnt file defined, create one otherwise.
+      if (fs.existsSync(envPath)) {
+        return cb(this.setConfig(envPath, defaults));
+      }
+      else {
+        fs.writeFile(envPath, "", "utf8", error => {
+          if (error) {
+            error(error);
+          }
 
-        warning("No dotenv environment file ('.env') has been defined.");
-        info(`A fresh new copy has been created within: ${process.cwd()}`);
+          warning("No dotenv environment file ('.env') has been defined.");
+          info(`A fresh new copy has been created within: ${process.cwd()}`);
 
-        return this.setConfig(envPath, defaults);
-      });
-    }
+          return cb(this.setConfig(envPath, defaults));
+        });
+      }
+    });
   },
 
   /**

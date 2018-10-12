@@ -1,3 +1,5 @@
+const Promise = require("bluebird");
+
 const _ = require("lodash");
 const fs = require("fs");
 const glob = require("glob");
@@ -16,16 +18,13 @@ const email = {
    * Queue each template to process as email.
    * Windmill will try to send all templates within the template directory if
    * no specific file has to be processed.
-   *
    * Windmill won't process template directory if `config.argv.watch`
    * equals true.
    *
-   * @param {Object} config Windmill configuration object.
-   *
    * @returns {Object}
    */
-  init() {
-    const config = environment.getConfig();
+  async init() {
+    const config = await environment.getConfig();
 
     // Check if the defined paths within the config file exists.
     environment.validateConfigPaths(config);
