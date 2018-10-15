@@ -1,5 +1,6 @@
-{% set main = block("main") %}
 {% set header = block("header") %}
+{% set hero = block("hero") %}
+{% set main = block("main") %}
 {% set footer = block("footer") %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -18,7 +19,11 @@
     {% block head %}{% endblock %}
   </head>
   <body>
-    {% embed "modules/basic-layout/basic-layout.twig" %}
+    {% embed "@template/modules/basic-layout.twig" %}
+      {% block basic_layout__hero %}
+        {{ hero }}
+      {% endblock %}
+
       {% block basic_layout__main %}
         {{ main }}
       {% endblock %}

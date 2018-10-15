@@ -1,8 +1,19 @@
 <table class="basic-layout" cellpadding="0" cellspacing="0" border="0" width="100%">
   <tbody>
-    <tr><td class="basic-layout__vertical-push"></td></tr>
+    {# <tr><td class="basic-layout__vertical-push"></td></tr> #}
     <tr>
       <td align="center">
+        {% if block("basic_layout__hero") is not empty %}
+        <table cellpadding="0" cellspacing="0" border="0" class="basic-layout__hero">
+          <tbody>
+            <tr>
+              <td>
+                {% block basic_layout__hero %}{% endblock %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        {% endif %}
         {% if block("basic_layout__main") is not empty %}
         <table cellpadding="0" cellspacing="0" border="0" class="basic-layout__body">
           <tbody>
@@ -11,7 +22,7 @@
             </tr>
             <tr>
               <td class="basic-layout__horizontal-push">&nbsp;</td>
-              <td align="center">
+              <td align="left">
                 {% block basic_layout__main %}{% endblock %}
               </td>
               <td class="basic-layout__horizontal-push">&nbsp;</td>

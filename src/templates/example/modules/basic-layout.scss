@@ -1,0 +1,19 @@
+.basic-layout {
+
+  &__hero,
+  &__body {
+    width: 100%;
+  }
+
+  &__image {
+    display: block;
+  }
+
+  &__vertical-push {
+    height: 20px;
+  }
+
+  &__horizontal-push {
+    width: 20px;
+  }
+}
