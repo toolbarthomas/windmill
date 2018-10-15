@@ -71,7 +71,7 @@ module.exports = {
     const inlinerOptions = {
       fileContent: render,
       image: false,
-      relativeTo: config.src
+      relativeTo: destinationDirectory // Set relative path of subject to template path.
     };
 
     info(`Embedding resources for subject: ${subjectName}`);

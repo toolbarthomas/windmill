@@ -8,6 +8,8 @@ const path = require("path");
 const builder = require("./bin/builder");
 const environment = require("./bin/environment");
 const mailer = require("./bin/mailer");
+const styles = require("./bin/styles");
+const watcher = require("./bin/watcher");
 
 const error = require("./bin/error");
 const info = require("./bin/info");
@@ -61,7 +63,6 @@ const email = {
 
       // Process each subject template.
       subjects.forEach((subject, index) => {
-        console.log(index);
         self._processSubject(subject, template, globals, config).then((build) => {
           // Send an example mail from the generated subject.
           if (config.argv.send) {
@@ -75,11 +76,9 @@ const email = {
   /**
    * Setup a watch instance and process each file seperately.
    */
-  watch(self) {
-    const cp = require("child_process");
-    const chokidar = require("child_process");
-
+  watch() {
     // @todo implement watcher
+    watcher.init();
   },
 
   _processSubject(subject, template, globals, config) {
@@ -94,6 +93,9 @@ const email = {
           template: templateGlobals,
           subject: locals
         };
+
+        // Process all stylesheets for the current subject.
+        const style = await styles.process(subject, templatePath, data, config);
 
         // Process all resources for the current subject.
         const build = await builder.process(subject, templatePath, data, config);

@@ -23,6 +23,7 @@
     "log-symbols": "^2.2.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
+    "node-sass": "^4.9.3",
     "nodemailer": "^4.6.8",
     "path": "^0.12.7",
     "twig": "^1.12.0",

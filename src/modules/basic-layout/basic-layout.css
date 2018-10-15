@@ -1,0 +1,11 @@
+.basic-layout {
+
+}
+
+.basic-layout__vertical-push {
+  height: 20px;
+}
+
+.basic-layout__horizontal-push {
+  width: 20px;
+}

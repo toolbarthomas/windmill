@@ -1,23 +1,23 @@
 <table class="basic-layout" cellpadding="0" cellspacing="0" border="0" width="100%">
   <tbody>
-    <tr><td class="mail__vertical-push"></td></tr>
+    <tr><td class="basic-layout__vertical-push"></td></tr>
     <tr>
       <td align="center">
-        {% if block("layout_body") is not empty %}
-        <table cellpadding="0" cellspacing="0" border="0" class="mail__body">
+        {% if block("basic_layout__main") is not empty %}
+        <table cellpadding="0" cellspacing="0" border="0" class="basic-layout__body">
           <tbody>
             <tr>
-              <td class="mail__vertical-push" colspan="3">&nbsp;</td>
+              <td class="basic-layout__vertical-push" colspan="3">&nbsp;</td>
             </tr>
             <tr>
-              <td class="mail__horizontal-push">&nbsp;</td>
+              <td class="basic-layout__horizontal-push">&nbsp;</td>
               <td align="center">
-                {% block main %}{% endblock %}
+                {% block basic_layout__main %}{% endblock %}
               </td>
-              <td class="mail__horizontal-push">&nbsp;</td>
+              <td class="basic-layout__horizontal-push">&nbsp;</td>
             </tr>
             <tr>
-              <td class="mail__vertical-push" colspan="3">&nbsp;</td>
+              <td class="basic-layout__vertical-push" colspan="3">&nbsp;</td>
             </tr>
         </table>
         {% endif %}

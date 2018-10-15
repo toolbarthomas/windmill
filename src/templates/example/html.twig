@@ -1,22 +1,26 @@
+{% set main = block("main") %}
+{% set header = block("header") %}
+{% set footer = block("footer") %}
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     {% if subject.title is not empty %}
       <title>{{ subject.title }}</title>
     {% endif %}
-    <link rel="stylesheet" href="styles/base.css" type="text/css" data-embed>
-    <link rel="stylesheet" href="styles/base.css" type="text/css" data-ignore>
+    <link rel="stylesheet" href="welcome.css" type="text/css" data-embed>
+    <link rel="stylesheet" href="welcome.css" type="text/css" data-ignore>
 
     <!--[if gte mso 9]>
-        <link rel="stylesheet" href="assets/css/outlook.css" type="text/css">
+        <link rel="stylesheet" href="styles/css/outlook.css" type="text/css">
     <![endif]-->
 
     {% block head %}{% endblock %}
   </head>
   <body>
     {% embed "modules/basic-layout/basic-layout.twig" %}
-      {% block layout_body %}
-        {{ block('subject_body') }}
+      {% block basic_layout__main %}
+        {{ main }}
       {% endblock %}
     {% endembed %}
   </body>
