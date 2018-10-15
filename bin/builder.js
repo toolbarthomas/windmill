@@ -70,8 +70,8 @@ module.exports = {
     // web-resource-inliner options
     const inlinerOptions = {
       fileContent: render,
-      images: false,
-      relativeTo: destinationDirectory // Set relative path of subject to template path.
+      images: true,
+      relativeTo: template // Set relative path of subject to template path.
     };
 
     info(`Embedding resources for subject: ${subjectName}`);
