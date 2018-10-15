@@ -95,10 +95,15 @@ const email = {
         };
 
         // Process all stylesheets for the current subject.
-        const style = await styles.process(subject, templatePath, data, config);
+        const style = await styles.process(subject, templatePath, config);
 
         // Process all resources for the current subject.
         const build = await builder.process(subject, templatePath, data, config);
+
+        if (style) {
+          // Remove temporary generated stylesheets.
+          await styles.clean(style);
+        }
 
         return cb(build);
       } catch (err) {

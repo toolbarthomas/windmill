@@ -3,6 +3,7 @@ const Promise = require("bluebird");
 const fs = require("fs");
 const path = require("path");
 const mkdirp = require("mkdirp");
+const rimraf = require("rimraf");
 const sass = require("node-sass");
 
 const error = require("./error");
@@ -10,19 +11,25 @@ const info = require("./info");
 const success = require("./success");
 
 module.exports = {
-  process(subject, templatePath, data, config) {
+  /**
+   * Check if the current subject has a scss file defined and process it.
+   *
+   * @param {String} subject Absolute path of the subject template file.
+   * @param {String} template Absolute path of the template directory.
+   * @param {Object} config Windmill configuration.
+   *
+   * @return {String}
+   */
+  process(subject, template, config) {
     return new Promise((cb) => {
       const templateExtension = path.extname(subject);
       const stylesheet = subject.replace(templateExtension, ".scss");
 
       /**
-       * Resolve paths from config.src to config.dist so it can be replaced
-       * within a resolved path.
+       * Process the stylesheet and write it in the same directory.
+       * The proccesed stylsheet will be removed after the template is built.
        */
-      const src = path.resolve(process.cwd(), config.src);
-      const dist = path.resolve(process.cwd(), config.dist);
-
-      const destination = stylesheet.replace(src, dist).replace(".scss", ".css");
+      const destination = stylesheet.replace(".scss", ".css");
 
       if (!fs.existsSync(stylesheet)) {
         info(`Not found, skipping: ${stylesheet}`);
@@ -34,7 +41,7 @@ module.exports = {
       const styles = sass.renderSync({
         file: stylesheet,
         includePaths: [
-          templatePath
+          template
         ],
         sourceMap: false,
         outFile: destination
@@ -52,8 +59,27 @@ module.exports = {
 
         fs.writeFileSync(destination, styles.css);
 
-        cb();
+        return cb(destination);
       });
     });
+  },
+
+  /**
+   * Remove the temporary processed file for the current subject.
+   */
+  clean(path) {
+    return new Promise((cb) => {
+      if (!fs.existsSync(path)) {
+        return cb();
+      }
+
+      rimraf(path, (err) => {
+        if (err) {
+          error(err);
+        }
+
+        return cb();
+      });
+    })
   }
 }

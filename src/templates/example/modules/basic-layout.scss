@@ -1,19 +1,52 @@
-.basic-layout {
+$basic-layout: (
+  "width": 550px,
+  "gutter": 20px,
+);
 
+.basic-layout {
+  width: 100%;
+
+  &__header,
   &__hero,
-  &__body {
-    width: 100%;
+  &__body,
+  &__footer {
+    width: map-get($basic-layout, "width");
   }
 
-  &__image {
-    display: block;
+  &__header {
+    p {
+      color: map-get($colors, "gray");
+    }
+
+    p,
+    a {
+      font-size: small;
+    }
+  }
+
+  &__hero {
+    background-color: map-get($colors, "primary");
+
+    img {
+      display: block;
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  &__footer {
+    td {
+      background-color: map-get($colors, "primary");
+      color: map-get($colors, "white");
+    }
   }
 
   &__vertical-push {
-    height: 20px;
+    height: map-get($basic-layout, "gutter");
   }
 
   &__horizontal-push {
-    width: 20px;
+    width: map-get($basic-layout, "gutter");
   }
 }

@@ -70,7 +70,7 @@ module.exports = {
     // web-resource-inliner options
     const inlinerOptions = {
       fileContent: render,
-      image: false,
+      images: false,
       relativeTo: destinationDirectory // Set relative path of subject to template path.
     };
 
