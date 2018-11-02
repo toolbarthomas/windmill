@@ -77,14 +77,14 @@ module.exports = {
     info(`Embedding resources for subject: ${subjectName}`);
 
     // Inline all resources defined within the processed html template.
-    let embedded;
+    let embeddedHtml;
     await new Promise((cb) => {
       inliner.html(inlinerOptions, (err, result) => {
         if (err) {
           error(err);
         }
 
-        embedded = result;
+        embeddedHtml = result;
         cb();
       });
     });
@@ -93,20 +93,18 @@ module.exports = {
 
     info(`Inlining resources for subject: ${subjectName}`);
 
-    const inlined = await juice(embedded);
+    const inlinedHtml = await juice(embeddedHtml);
 
     success(`Resources inlined for subject: ${subjectName}`);
 
-    if (!inlined) {
+    if (!inlinedHtml) {
       return;
     }
 
-    const output = inlined;
-
     // Generate the template first before we continue.
-    await this.generate(destinationPath, destinationDirectory, output);
+    await this.generate(destinationPath, destinationDirectory, inlinedHtml);
 
-    return output;
+    return inlinedHtml;
   },
 
   generate(destinationPath, destinationDirectory, output) {
