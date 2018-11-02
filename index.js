@@ -70,7 +70,7 @@ const email = {
           }
 
           // Send an example mail from the generated subject.
-          if (!config.argv.send) {
+          if (config.argv.send) {
             mailer.send(html, subject, config);
           }
         });

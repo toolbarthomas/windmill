@@ -18,16 +18,9 @@ module.exports = {
       return;
     }
 
-    // Throw an error if no sender has been defined.
-    if (!config.sender) {
-      warning("Unable to send the test email. No email address has been defined for the sender.");
-      return;
-    }
-
     // Throw an error if no recipients have been defined.
     if (!config.recipients || config.recipients.length === 0) {
-      warning("Unable to send the test mail. No recipients have been defined.");
-      return;
+      error(`Unable to send the email since no recipient has been defined.`);
     }
 
     // Define the subject line from the title element within from processed html.
