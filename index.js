@@ -63,10 +63,15 @@ const email = {
 
       // Process each subject template.
       subjects.forEach((subject, index) => {
-        self._processSubject(subject, template, globals, config).then((build) => {
+        self._processSubject(subject, template, globals, config).then((html) => {
+          if (!html) {
+            warning(`Skipping invalid build: ${subject}.`);
+            return;
+          }
+
           // Send an example mail from the generated subject.
-          if (config.argv.send) {
-            mailer.send(build);
+          if (!config.argv.send) {
+            mailer.send(html, subject, config);
           }
         });
       });
@@ -97,15 +102,15 @@ const email = {
         // Process all stylesheets for the current subject.
         const style = await styles.process(subject, templatePath, config);
 
-        // Process all resources for the current subject.
-        const build = await builder.process(subject, templatePath, data, config);
+        // Generate the html build for the current subject.
+        const html = await builder.process(subject, templatePath, data, config);
 
+        // Remove temporary generated stylesheets.
         if (style) {
-          // Remove temporary generated stylesheets.
           await styles.clean(style);
         }
 
-        return cb(build);
+        return cb(html);
       } catch (err) {
         error(err);
       }

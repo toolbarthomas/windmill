@@ -15,9 +15,9 @@ Coming soon
 
 ## Custimize your setup
 You can set specific configuration for Windmill by defining an environment file
-([dotenv](https://www.npmjs.com/package/dotenv)) within working directory for NODE.
+([dotenv](https://www.npmjs.com/package/dotenv)) within your working directory.
 
-The following Environment variables can be defined within this file.
+The following environment variables can be defined within this file:
 
 ```shell
   WINDMILL_SRC # The source directory with all Windmill specific assets.
@@ -35,7 +35,7 @@ After you have setup Windmill you can use it by running the following command:
 $ windmill
 ```
 
-Windmill will process all templates by default, but you also can process a single
+Windmill will process all templates by default, but you can also process a single
 template by adding the template directory name. For example:
 
 ```bash
@@ -54,6 +54,10 @@ Coming soon
 Coming soon
 
 ## Builder
+Windmill uses `twig.js` to process all template files into actual email templates.
+Twig.js is the javascript implementation of the Twig PHP templating engine.
+
+Read more about [twig.js](https://github.com/twigjs/twig.js/wiki)
 
 ### Binding data
 You can store local variables within a seperate JSON file for each email subject.
@@ -62,13 +66,13 @@ must match with the name of the subject. For example:
 
 ```shell
 subjects/
- - example.twig # Use example.json to reference variables.
- - example.json # Variables are store within an JSON object.
+ - example.twig # Will use variables defined within example.json.
+ - example.json # Variables are stored within a JSON object.
 ```
 
-You can also define globals within each template directory that can be used within
-the template files. To define a global you should create a json file within
-template directory. The filename of the json file should match the name of the
+You can also define globals within each template directory and use them within
+the template files. To define a global variable you should create a json file
+within the template directory. The filename of the json file should match the name of the
 template file.
 
 All globals are available from the `subject` & `template` object and can be
@@ -112,7 +116,7 @@ templates/
     "name": "Barber Bakery",
     "address": "Foo street 1"
   },
-  "subject" {
+  "subject": {
     "title": "Greetings stranger...",
     "body": "Lorem ipsum si dolor amet..."
   }
