@@ -19,7 +19,7 @@
     "email-templates": "^6.0.0",
     "glob": "^7.1.4",
     "juice": "^5.2.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "log-symbols": "^3.0.0",
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
